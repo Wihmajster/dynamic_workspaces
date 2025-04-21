@@ -5,9 +5,6 @@
 
 // Desktop numbers are from zero (unlike how it worked in plasma 5)
 
-
-const MIN_DESKTOPS = readConfig("minDesktops", 2);
-const KEEP_EMPTY_MIDDLE_DESKTOPS = readConfig("keepEmptyMiddleDesktops", false);
 const LOG_LEVEL = 2; // 0 trace, 1 debug, 2 info
 
 
@@ -99,6 +96,11 @@ const compat = isKde6
 
 /*****  Logic definition  *****/
 
+// Wrappers for reading config values
+// This keeps default values in one place, 
+// which are also needed for readConfig to correctly derive the type
+function getMinDesktops() {return readConfig("minDesktops", 2);}
+function getKeepEmptyMiddleDesktops() {return readConfig("keepEmptyMiddleDesktops", false);}
 
 // shifts a window to the left if it's more to the right than number
 function shiftRighterThan(client, number)
@@ -147,7 +149,7 @@ function removeDesktop(number)
 		debug("Not removing desktop at end");
 		return false;
 	}
-	if (desktopsLength <= MIN_DESKTOPS)
+	if (desktopsLength <= getMinDesktops())
 	{
 		debug("Not removing desktop, too few left");
 		return false;
@@ -252,7 +254,7 @@ function onDesktopSwitch(oldDesktop)
 	//   2. At least MIN_DESKTOPS. Note we actually subtract two because:
 	//      - We always have the dynamic empty desktop at the end 
 	//      - MIN_DESKTOPS is a count, but we need an index
-	const preserveUpToIndex = Math.max(currentDesktopIndex, MIN_DESKTOPS - 2);
+	const preserveUpToIndex = Math.max(currentDesktopIndex, getMinDesktops() - 2);
 	
 	// Loop through desktops right-to-left and delete empty ones:
 	// - Starts from second-to-last desktop (preserving always one empty desktop at the end)
@@ -267,7 +269,7 @@ function onDesktopSwitch(oldDesktop)
 		{
 			removeDesktop(desktopIdx);
 		}
-		else if (KEEP_EMPTY_MIDDLE_DESKTOPS)
+		else if (getKeepEmptyMiddleDesktops())
 		{
 			debug("Found non-empty desktop, stopping purge");
 			break;
